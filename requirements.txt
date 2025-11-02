@@ -1,0 +1,6 @@
+# Required Python packages for Biofects Portfolio Tracker
+# These will be automatically installed by Home Assistant when the integration is loaded
+
+finnhub-python>=2.4.19
+pycoingecko>=3.1.0
+feedparser>=6.0.10

@@ -1,0 +1,199 @@
+# Example Automations for Biofects Portfolio Tracker
+
+# Daily Portfolio Report (Morning)
+- alias: "Portfolio: Daily Morning Report"
+  description: Send a daily portfolio summary every morning
+  trigger:
+    - platform: time
+      at: "09:00:00"
+  action:
+    - service: notify.mobile_app_your_phone
+      data:
+        title: "📊 Daily Portfolio Update"
+        message: >
+          Good morning! Here's your portfolio summary:
+          
+          💰 Total Value: ${{ states('sensor.portfolio_summary') | round(2) }}
+          📈 Performance: {{ state_attr('sensor.portfolio_summary', 'total_gain_loss_percent') | round(2) }}%
+          💵 Gain/Loss: ${{ state_attr('sensor.portfolio_summary', 'total_gain_loss') | round(2) }}
+          📊 Holdings: {{ state_attr('sensor.portfolio_summary', 'total_holdings') }}
+        data:
+          tag: portfolio_update
+          group: portfolio
+
+# Alert on Significant Gain (5%+)
+- alias: "Portfolio: Alert on Big Gain"
+  description: Notify when portfolio gains exceed 5%
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.portfolio_summary
+      attribute: total_gain_loss_percent
+      above: 5
+  condition:
+    - condition: template
+      value_template: >
+        {{ (as_timestamp(now()) - as_timestamp(state_attr('automation.portfolio_alert_on_big_gain', 'last_triggered') | default(0))) > 3600 }}
+  action:
+    - service: notify.mobile_app_your_phone
+      data:
+        title: "🚀 Portfolio Alert: Big Gain!"
+        message: >
+          Your portfolio is up {{ state_attr('sensor.portfolio_summary', 'total_gain_loss_percent') | round(2) }}%!
+          
+          Current Value: ${{ states('sensor.portfolio_summary') | round(2) }}
+          Total Gain: ${{ state_attr('sensor.portfolio_summary', 'total_gain_loss') | round(2) }}
+        data:
+          tag: portfolio_gain
+          importance: high
+          ttl: 0
+          priority: high
+
+# Alert on Significant Loss (5%+)
+- alias: "Portfolio: Alert on Big Loss"
+  description: Notify when portfolio losses exceed 5%
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.portfolio_summary
+      attribute: total_gain_loss_percent
+      below: -5
+  condition:
+    - condition: template
+      value_template: >
+        {{ (as_timestamp(now()) - as_timestamp(state_attr('automation.portfolio_alert_on_big_loss', 'last_triggered') | default(0))) > 3600 }}
+  action:
+    - service: notify.mobile_app_your_phone
+      data:
+        title: "⚠️ Portfolio Alert: Significant Loss"
+        message: >
+          Your portfolio is down {{ state_attr('sensor.portfolio_summary', 'total_gain_loss_percent') | round(2) }}%
+          
+          Current Value: ${{ states('sensor.portfolio_summary') | round(2) }}
+          Total Loss: ${{ state_attr('sensor.portfolio_summary', 'total_gain_loss') | round(2) }}
+        data:
+          tag: portfolio_loss
+          importance: high
+
+# Individual Holding Alert (10% change)
+- alias: "Portfolio: Individual Holding Alert"
+  description: Notify on significant individual holding changes
+  trigger:
+    - platform: template
+      value_template: >
+        {% set holdings = state_attr('sensor.portfolio_summary', 'total_holdings') | default(0) %}
+        {% if holdings > 0 %}
+          {% set ns = namespace(alert=false) %}
+          {% for i in range(holdings) %}
+            {% set entity = 'sensor.holding_' ~ i %}
+            {% if states(entity) != 'unknown' %}
+              {% set pct = state_attr(entity, 'gain_loss_percent') | float(0) %}
+              {% if pct > 10 or pct < -10 %}
+                {% set ns.alert = true %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.alert }}
+        {% else %}
+          false
+        {% endif %}
+  action:
+    - service: notify.mobile_app_your_phone
+      data:
+        title: "📊 Holding Alert"
+        message: >
+          One or more holdings have changed significantly (>10%).
+          Check your portfolio for details.
+
+# Weekly Portfolio Summary
+- alias: "Portfolio: Weekly Summary Report"
+  description: Send a detailed weekly portfolio report
+  trigger:
+    - platform: time
+      at: "08:00:00"
+  condition:
+    - condition: time
+      weekday:
+        - sun
+  action:
+    - service: notify.mobile_app_your_phone
+      data:
+        title: "📈 Weekly Portfolio Report"
+        message: >
+          Week Ending {{ now().strftime('%B %d, %Y') }}
+          
+          💰 Portfolio Value: ${{ states('sensor.portfolio_summary') | round(2) }}
+          📊 Total Holdings: {{ state_attr('sensor.portfolio_summary', 'total_holdings') }}
+          📈 Stocks: {{ state_attr('sensor.portfolio_summary', 'stock_count') }}
+          💎 Crypto: {{ state_attr('sensor.portfolio_summary', 'crypto_count') }}
+          
+          📊 Performance: {{ state_attr('sensor.portfolio_summary', 'total_gain_loss_percent') | round(2) }}%
+          💵 Gain/Loss: ${{ state_attr('sensor.portfolio_summary', 'total_gain_loss') | round(2) }}
+        data:
+          tag: portfolio_weekly
+
+# Market Close Summary (US Markets)
+- alias: "Portfolio: Market Close Summary"
+  description: Daily summary at US market close
+  trigger:
+    - platform: time
+      at: "16:00:00"  # 4 PM local time
+  condition:
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+  action:
+    - service: notify.mobile_app_your_phone
+      data:
+        title: "🔔 Market Close - Portfolio Update"
+        message: >
+          Markets are closed. Today's summary:
+          
+          Portfolio: ${{ states('sensor.portfolio_summary') | round(2) }}
+          Performance: {{ state_attr('sensor.portfolio_summary', 'total_gain_loss_percent') | round(2) }}%
+          Gain/Loss: ${{ state_attr('sensor.portfolio_summary', 'total_gain_loss') | round(2) }}
+        data:
+          tag: market_close
+
+# Portfolio Milestone Alert ($10k increments)
+- alias: "Portfolio: Milestone Achievement"
+  description: Celebrate portfolio value milestones
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.portfolio_summary
+      above: 10000
+  action:
+    - service: notify.mobile_app_your_phone
+      data:
+        title: "🎉 Portfolio Milestone!"
+        message: >
+          Congratulations! Your portfolio has reached ${{ (states('sensor.portfolio_summary') | float / 1000) | round(1) }}K!
+        data:
+          tag: milestone
+          importance: high
+
+# News Update Notification
+- alias: "Portfolio: Important News Available"
+  description: Notify when new financial news is available
+  trigger:
+    - platform: state
+      entity_id: sensor.portfolio_news
+  condition:
+    - condition: template
+      value_template: "{{ trigger.to_state.state | int > 0 }}"
+  action:
+    - service: notify.mobile_app_your_phone
+      data:
+        title: "📰 New Market News Available"
+        message: >
+          {{ states('sensor.portfolio_news') }} new articles available.
+          
+          Latest: {{ state_attr('sensor.portfolio_news', 'news_items')[0].title }}
+        data:
+          tag: news_update
+          actions:
+            - action: "URI"
+              title: "Read News"
+              uri: "{{ state_attr('sensor.portfolio_news', 'news_items')[0].link }}"

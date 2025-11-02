@@ -1,0 +1,76 @@
+# Simple Portfolio Dashboard
+# A clean, minimalist view of your portfolio
+
+views:
+  - title: Portfolio
+    path: portfolio
+    icon: mdi:wallet
+    cards:
+      # Portfolio Value Card
+      - type: entity
+        entity: sensor.portfolio_summary
+        name: Total Portfolio Value
+        icon: mdi:wallet
+        
+      # Performance Summary
+      - type: glance
+        title: Performance Overview
+        entities:
+          - entity: sensor.portfolio_summary
+            name: Total Value
+            
+        columns: 3
+        show_name: true
+        show_state: true
+        
+      # Key Metrics
+      - type: entities
+        title: Portfolio Metrics
+        entities:
+          - type: attribute
+            entity: sensor.portfolio_summary
+            attribute: total_cost
+            name: Total Cost Basis
+            suffix: USD
+            icon: mdi:cash
+            
+          - type: attribute
+            entity: sensor.portfolio_summary
+            attribute: total_gain_loss
+            name: Total Gain/Loss
+            suffix: USD
+            icon: mdi:trending-up
+            
+          - type: attribute
+            entity: sensor.portfolio_summary
+            attribute: total_gain_loss_percent
+            name: Performance
+            suffix: '%'
+            icon: mdi:percent
+            
+          - type: attribute
+            entity: sensor.portfolio_summary
+            attribute: total_holdings
+            name: Holdings
+            icon: mdi:format-list-numbered
+            
+      # Holdings List
+      - type: entities
+        title: My Holdings
+        entities:
+          # Replace these with your actual holding sensors
+          - entity: sensor.holding_aapl
+            name: Apple Inc.
+            secondary_info: last-updated
+            
+          - entity: sensor.holding_tsla
+            name: Tesla Inc.
+            secondary_info: last-updated
+            
+          - entity: sensor.holding_btc
+            name: Bitcoin
+            secondary_info: last-updated
+            
+          - entity: sensor.holding_eth
+            name: Ethereum
+            secondary_info: last-updated

@@ -1,0 +1,79 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Biofects Portfolio Tracker",
+        "description": "Enter your Finnhub API key. Crypto tracking is FREE - no API key needed!",
+        "data": {
+          "finnhub_api_key": "Finnhub API Key (required for stocks)"
+        }
+      },
+      "holdings": {
+        "title": "Add Holdings",
+        "description": "Add your stock and crypto holdings. You currently have {holdings_count} holding(s).",
+        "data": {
+          "symbol": "Symbol (e.g., AAPL, BTC)",
+          "holding_type": "Type",
+          "quantity": "Quantity",
+          "buy_price": "Buy Price",
+          "add_another": "Add another holding?"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to API. Please check your API keys."
+    },
+    "abort": {
+      "already_configured": "This integration is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Portfolio Options",
+        "description": "Choose what you want to configure. Current holdings: {holdings_count}",
+        "data": {
+          "action": "Action"
+        }
+      },
+      "update_interval": {
+        "title": "Update Refresh Interval",
+        "description": "How often should the portfolio data refresh?",
+        "data": {
+          "update_interval": "Update Interval (minutes)"
+        }
+      },
+      "update_api_keys": {
+        "title": "Update Finnhub API Key",
+        "description": "Current Finnhub: {current_finnhub}\n\nNote: CoinGecko is FREE and requires no API key!",
+        "data": {
+          "finnhub_api_key": "Finnhub API Key (required for stocks)"
+        }
+      },
+      "add_holding": {
+        "title": "Add New Holding",
+        "description": "Add a new stock or cryptocurrency to your portfolio",
+        "data": {
+          "symbol": "Symbol (e.g., AAPL, BTC)",
+          "holding_type": "Type",
+          "quantity": "Quantity",
+          "buy_price": "Buy Price ($)"
+        }
+      },
+      "remove_holding": {
+        "title": "Remove Holding",
+        "description": "Select a holding to remove from your portfolio",
+        "data": {
+          "holding_to_remove": "Holding to remove"
+        }
+      },
+      "view_holdings": {
+        "title": "Current Holdings",
+        "description": "Your portfolio holdings:\n\n{holdings_list}"
+      }
+    },
+    "abort": {
+      "no_holdings": "No holdings to remove."
+    }
+  }
+}

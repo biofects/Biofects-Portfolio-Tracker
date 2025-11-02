@@ -1,0 +1,88 @@
+biofects_portfolio:
+  name: Biofects Portfolio Tracker
+  description: Manage your investment portfolio holdings
+  services:
+    add_holding:
+      name: Add Holding
+      description: Add a new stock or crypto holding to your portfolio
+      fields:
+        symbol:
+          name: Symbol
+          description: Stock ticker or crypto symbol (e.g., AAPL, BTC)
+          required: true
+          example: "AAPL"
+          selector:
+            text:
+        holding_type:
+          name: Type
+          description: Type of holding
+          required: true
+          selector:
+            select:
+              options:
+                - "stock"
+                - "crypto"
+        quantity:
+          name: Quantity
+          description: Number of shares or coins
+          required: true
+          example: 10
+          selector:
+            number:
+              min: 0
+              step: 0.00000001
+              mode: box
+        buy_price:
+          name: Buy Price
+          description: Purchase price per unit
+          required: true
+          example: 150.00
+          selector:
+            number:
+              min: 0
+              step: 0.01
+              mode: box
+    
+    remove_holding:
+      name: Remove Holding
+      description: Remove a holding from your portfolio
+      fields:
+        symbol:
+          name: Symbol
+          description: Symbol of the holding to remove
+          required: true
+          example: "AAPL"
+          selector:
+            text:
+    
+    update_holding:
+      name: Update Holding
+      description: Update quantity or buy price of an existing holding
+      fields:
+        symbol:
+          name: Symbol
+          description: Symbol of the holding to update
+          required: true
+          example: "AAPL"
+          selector:
+            text:
+        quantity:
+          name: Quantity
+          description: New quantity (leave empty to keep current)
+          required: false
+          example: 10
+          selector:
+            number:
+              min: 0
+              step: 0.00000001
+              mode: box
+        buy_price:
+          name: Buy Price
+          description: New buy price (leave empty to keep current)
+          required: false
+          example: 150.00
+          selector:
+            number:
+              min: 0
+              step: 0.01
+              mode: box
