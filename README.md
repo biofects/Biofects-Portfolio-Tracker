@@ -1,6 +1,7 @@
+
 # 💼 Biofects Portfolio Tracker for Home Assistant
 
-A comprehensive Home Assistant custom integration that tracks stocks, cryptocurrencies, and portfolio performance in real-time using Finnhub and CoinGecko APIs. View everything from your Lovelace dashboard with charts, statistics, and a financial news ticker.
+A comprehensive Home Assistant custom integration that tracks stocks, cryptocurrencies, and portfolio performance in near real-time using Finnhub and CoinGecko APIs. View everything from your Lovelace dashboard with charts, statistics, and a financial news ticker.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
