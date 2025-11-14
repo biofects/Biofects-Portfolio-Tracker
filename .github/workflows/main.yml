@@ -21,6 +21,6 @@ jobs:
         with:
           python-version: '3.11'
       - name: Run HACS validation
-        uses: hacs/action@v24.5.0
+        uses: hacs/action@v22.5.0
         with:
           category: integration
