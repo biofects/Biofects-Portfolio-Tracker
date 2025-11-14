@@ -1,0 +1,46 @@
+# Biofects Portfolio Tracker - Required Input Helpers
+# Add this to your configuration.yaml file
+
+# Input helpers for adding holdings via the dashboard
+input_text:
+  portfolio_add_symbol:
+    name: "Stock/Crypto Symbol"
+    initial: ""
+    max: 10
+
+input_select:
+  portfolio_add_type:
+    name: "Holding Type"
+    options:
+      - "Stock"
+      - "Crypto"
+    initial: "Stock"
+
+input_number:
+  portfolio_add_quantity:
+    name: "Quantity"
+    min: 0.001
+    max: 1000000
+    step: 0.001
+    initial: 1
+    
+  portfolio_add_buy_price:
+    name: "Buy Price (USD)"
+    min: 0.01
+    max: 100000
+    step: 0.01
+    initial: 1.00
+
+# Optional: Daily quote feed (if you want the greeting quote feature)
+feedreader:
+  urls:
+    - https://zenquotes.io/api/today
+
+sensor:
+  - platform: feedreader
+    name: "Daily Quote Feed"
+    feed_url: "https://zenquotes.io/api/today"
+    date_format: "%a, %d %b %Y %H:%M:%S %z"
+    inclusions:
+      - title
+      - summary

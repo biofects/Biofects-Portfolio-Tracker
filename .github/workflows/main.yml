@@ -1,0 +1,26 @@
+# HACS Validation Workflow for Home Assistant Custom Components
+# Based on: https://github.com/hacs/action
+
+name: HACS Validation
+
+on:
+  push:
+    branches: [ main, master, feature/portfolio-tracker-integration ]
+  pull_request:
+    branches: [ main, master, feature/portfolio-tracker-integration ]
+
+jobs:
+  hacs:
+    name: HACS Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run HACS validation
+        uses: hacs/action@v24.5.0
+        with:
+          category: integration

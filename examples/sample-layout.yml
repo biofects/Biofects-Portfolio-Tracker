@@ -1,0 +1,22 @@
+# Sample Lovelace Dashboard Layout for Biofects Portfolio Tracker
+# Copy this file to your Home Assistant dashboard configuration for a quick start.
+# For more details, see the README.
+
+# Example content (replace with your actual layout):
+type: vertical-stack
+cards:
+  - type: entities
+    title: Portfolio Summary
+    entities:
+      - entity: sensor.portfolio_summary
+      - entity: sensor.holding_aapl
+      - entity: sensor.holding_btc
+  - type: custom:apexcharts-card
+    header:
+      show: true
+      title: Portfolio Performance
+    graph_span: 7d
+    series:
+      - entity: sensor.portfolio_summary
+        name: Portfolio Value
+        stroke_width: 2

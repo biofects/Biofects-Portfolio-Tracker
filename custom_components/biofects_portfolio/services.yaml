@@ -34,9 +34,29 @@ biofects_portfolio:
               mode: box
         buy_price:
           name: Buy Price
-          description: Purchase price per unit
+          description: Purchase price per unit (or total investment if using total_investment mode)
           required: true
           example: 150.00
+          selector:
+            number:
+              min: 0
+              step: 0.01
+              mode: box
+        total_invested:
+          name: Total Invested (Optional - Universal)
+          description: Total USD amount paid for stocks or crypto. When provided with quantity, buy_price will be automatically calculated (total_invested ÷ quantity = buy_price). Works for both stocks and crypto.
+          required: false
+          example: 1400.00
+          selector:
+            number:
+              min: 0
+              step: 0.01
+              mode: box
+        total_cost:
+          name: Total Cost (Optional - Legacy)
+          description: Legacy parameter - use total_invested instead.
+          required: false
+          example: 1400.00
           selector:
             number:
               min: 0
@@ -45,13 +65,28 @@ biofects_portfolio:
     
     remove_holding:
       name: Remove Holding
-      description: Remove a holding from your portfolio
+      description: Remove a holding or specific lot from your portfolio. Provide entity_id for specific lot, symbol for all lots, or lot_id for advanced use.
       fields:
         symbol:
           name: Symbol
-          description: Symbol of the holding to remove
-          required: true
-          example: "AAPL"
+          description: Remove ALL lots of this symbol (e.g., AAPL, XRP). Use this to exit a position completely.
+          required: false
+          example: "XRP"
+          selector:
+            text:
+        entity_id:
+          name: Entity ID
+          description: Remove a specific lot by entity ID (e.g., sensor.holding_xrp_0). Most precise method.
+          required: false
+          example: "sensor.holding_xrp_0"
+          selector:
+            entity:
+              domain: sensor
+        lot_id:
+          name: Lot ID
+          description: Remove by lot ID (advanced, visible in sensor attributes)
+          required: false
+          example: "XRP_1699564321_5678"
           selector:
             text:
     

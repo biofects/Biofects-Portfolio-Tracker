@@ -1,0 +1,597 @@
+wallpanel:
+  enabled: true
+  enabled_on_tabs: []
+  hide_toolbar: false
+  hide_sidebar: false
+  fullscreen: false
+  idle_time: 300
+  display_time: 300
+  image_order: random
+  image_list_update_interval: 3600
+  image_url: >-
+    https://api.unsplash.com/photos/random?client_id=5xCQtdJwkPMNO71JLvNFFFUbYA80OoZeppiLOx35V34&query=fantasy
+  info_animation_duration_x: 30
+  info_animation_duration_y: 11
+  info_animation_timing_function_x: ease-in-out
+  info_animation_timing_function_y: ease-in-out
+  info_move_pattern: random
+  info_move_interval: 0
+  info_move_fade_duration: 2
+  cards:
+    - type: custom:clock-weather-card
+      entity: weather.forecast_home
+      title: Home
+      sun_entity: sun.sun
+      temperature_sensor: sensor.outdoor_temp
+      humidity_sensor: sensor.outdoor_humidity
+      weather_icon_type: line
+      animated_icon: true
+      forecast_rows: 5
+      locale: en-GB
+      time_pattern: h:mm a
+      time_format: 12
+      date_pattern: ccc, d.MM.yy
+      hide_today_section: false
+      hide_forecast_section: false
+      show_humidity: true
+      hide_clock: false
+      hide_date: false
+      hourly_forecast: false
+      use_browser_time: false
+      time_zone: null
+      show_decimal: false
+      apparent_sensor: sensor.real_feel_temperature
+      aqi_sensor: sensor.air_quality_index
+kiosk_mode:
+  user_settings:
+    - users:
+        - tfam
+      kiosk: true
+sidebar:
+  style: |
+    :host {
+      --sidebar-background-color: rgba(30, 34, 44, 0.18);
+      --sidebar-text-color: var(--primary-text-color, #b2ebf2);
+      --sidebar-icon-color: var(--primary-text-color, #b2ebf2);
+
+      background-color: var(--sidebar-background-color) !important;
+      color: var(--sidebar-text-color);
+      backdrop-filter: blur(18px) saturate(140%) contrast(1.08);
+      -webkit-backdrop-filter: blur(18px) saturate(140%) contrast(1.08);
+      border: 2px solid rgba(0, 188, 212, 0.32);
+      border-right: 2px solid var(--accent-color, #00bcd4); /* strong right border */
+      box-shadow: 2px 0 8px 0 rgba(0,0,0,0.10); /* subtle shadow for separation */
+      margin-right: 8px; /* ensures border is visible */
+      padding: 8px 0 8px 0;
+      font-family: var(--primary-font-family, 'Roboto', 'Segoe UI', Arial, sans-serif);
+      border-radius: 18px 0 0 18px;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .sidebar-inner {
+      position: relative;
+      height: 100%;
+    }
+    .digitalClock, .date {
+      text-align: center;
+      color: var(--sidebar-text-color);
+      font-size: 13px;
+      text-shadow: 0 1px 8px rgba(0, 188, 212, 0.18);
+      letter-spacing: 0.5px;
+    }
+    .sidebarMenu li {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      line-height: 26px;
+      padding: 7px 14px 7px 10px;
+      border-radius: 10px;
+      margin: 2px 6px;
+      border-bottom: none;
+      color: var(--sidebar-text-color);
+      transition: background 0.2s, color 0.2s;
+    }
+    .sidebarMenu li .icon {
+      color: var(--sidebar-icon-color);
+    }
+    .sidebarMenu li.active {
+      background-color: var(--sidebar-selected-background-color);
+      color: var(--sidebar-selected-text-color);
+      box-shadow: 0 2px 8px 0 rgba(0, 188, 212, 0.08);
+    }
+    .sidebarMenu li:hover {
+      /* No hover effect for tablets */
+    }
+    .bottom {
+      margin-top: 48% !important;
+      width: 75% !important;
+      padding: 0 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .bottom ha-card {
+      width: 100% !important;
+      max-width: 100% !important;
+      background-color: rgba(10, 20, 40, 0.7) !important;
+      border: 1px solid rgba(0, 188, 212, 0.10) !important;
+      border-radius: 10px !important;
+      box-shadow: 0 2px 10px rgba(0, 188, 212, 0.08) !important;
+      margin-bottom: 10px;
+      overflow: hidden !important;
+    }
+    .bottom .card-content {
+      width: 70% !important;
+      padding: 10px !important;
+    }
+    /* Make the first card in bottom (select box) shorter */
+    .bottom ha-card:first-child {
+      height: auto !important;
+      min-height: 0 !important;
+    }
+    .bottom ha-card:first-child .card-content {
+      padding: 7px !important;
+    }
+    /* Media player specific styling */
+    .bottom .type-media-control ha-card {
+      background-color: rgba(10, 20, 40, 0.7) !important;
+    }
+    .bottom .media-player {
+      --mdc-theme-primary: var(--sidebar-text-color) !important;
+      --paper-slider-active-color: var(--sidebar-text-color) !important;
+      --paper-slider-knob-color: var(--sidebar-text-color) !important;
+      --paper-slider-pin-color: var(--sidebar-text-color) !important;
+    }
+    .bottom .media-player mwc-icon-button {
+      color: var(--sidebar-text-color) !important;
+    }
+    .bottom .entity-select, 
+    .bottom select {
+      color: var(--sidebar-text-color) !important;
+      background-color: rgba(10, 30, 50, 0.7) !important;
+      border-color: rgba(0, 188, 212, 0.15) !important;
+    }
+  width:
+    mobile: 0
+    tablet: 12
+    desktop: 12
+  digitalClock: true
+  date: true
+  dateFormat: DD-MMM-YYYY
+  twelveHourVersion: true
+  period: true
+  clock: false
+  hideTopMenu: false
+  hideHassSidebar: false
+  sidebarMenu:
+    - action: navigate
+      navigation_path: /main-menu
+      name: Menu
+      icon: mdi:menu
+      active: true
+    - action: navigate
+      navigation_path: /dashboard-home
+      name: Home
+      icon: mdi:home
+      active: true
+    - action: navigate
+      navigation_path: /dashboard-climate
+      name: Climate
+      icon: mdi:thermometer-lines
+      active: true
+    - action: navigate
+      navigation_path: /dashboard-irrigation
+      name: Irrigation
+      icon: mdi:sprinkler-variant
+      active: true
+    - action: navigate
+      navigation_path: /dashboard-lights
+      name: Lights
+      icon: mdi:lightbulb
+      active: true
+    - action: navigate
+      navigation_path: /dashboard-office
+      name: Office
+      icon: mdi:chair-rolling
+      active: true
+    - action: navigate
+      navigation_path: /dashboard-security
+      name: Security
+      icon: mdi:cctv
+      active: true
+    - action: navigate
+      navigation_path: /dashboard-calendar
+      name: Calendar
+      icon: mdi:calendar
+      active: true
+  bottomCard:
+    type: grid
+    cardOptions:
+      columns: 1
+      square: false
+      cards:
+        - type: button
+          show_name: true
+          show_icon: true
+          icon: mdi:microphone
+          name: Talk to Optimus
+          tap_action:
+            action: assist
+            start_listening: true
+            show_ui: false
+            pipeline_id: 01jj5fvvtzgm99z2dks4pey06f
+          entity: conversation.tfam_voice_ai
+          card_mod:
+            style: |
+              ha-card {
+                position: relative;
+                border-radius: 20px;
+                background: linear-gradient(135deg, rgba(0, 188, 212, 0.9), rgba(0, 150, 170, 0.8), rgba(0, 188, 212, 0.7));
+                color: var(--sidebar-text-color, #b2ebf2);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border: 1px solid rgba(0, 188, 212, 0.6);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                width: 120px;
+                height: 60px;
+                margin: 0 auto;
+                overflow: hidden;
+                animation: orbFloat 4s ease-in-out infinite, orbGlow 3s ease-in-out infinite alternate;
+                box-shadow: 
+                  0 0 20px rgba(0, 188, 212, 0.3),
+                  0 0 40px rgba(0, 188, 212, 0.2),
+                  0 0 60px rgba(0, 188, 212, 0.1),
+                  inset 0 0 20px rgba(255, 255, 255, 0.1);
+              }
+
+              ha-card::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: conic-gradient(
+                  from 0deg,
+                  transparent,
+                  rgba(0, 188, 212, 0.3),
+                  transparent,
+                  rgba(0, 188, 212, 0.3),
+                  transparent
+                );
+                animation: orbRotate 8s linear infinite;
+                border-radius: 50%;
+                z-index: -1;
+              }
+
+              ha-card::after {
+                content: '';
+                position: absolute;
+                top: 10px;
+                left: 20px;
+                width: 30px;
+                height: 20px;
+                background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.8), transparent);
+                border-radius: 50%;
+                filter: blur(8px);
+                opacity: 0.7;
+                animation: orbShine 6s ease-in-out infinite;
+              }
+
+              @keyframes orbFloat {
+                0%, 100% { 
+                  transform: translateY(0px) scale(1);
+                }
+                50% { 
+                  transform: translateY(-3px) scale(1.02);
+                }
+              }
+
+              @keyframes orbGlow {
+                0% { 
+                  box-shadow: 
+                    0 0 20px rgba(0, 188, 212, 0.3),
+                    0 0 40px rgba(0, 188, 212, 0.2),
+                    0 0 60px rgba(0, 188, 212, 0.1),
+                    inset 0 0 20px rgba(255, 255, 255, 0.1);
+                }
+                100% { 
+                  box-shadow: 
+                    0 0 30px rgba(0, 188, 212, 0.4),
+                    0 0 60px rgba(0, 188, 212, 0.3),
+                    0 0 90px rgba(0, 188, 212, 0.2),
+                    inset 0 0 30px rgba(255, 255, 255, 0.2);
+                }
+              }
+
+              @keyframes orbRotate {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+
+              @keyframes orbShine {
+                0%, 100% { 
+                  opacity: 0.7;
+                  transform: scale(1);
+                }
+                50% { 
+                  opacity: 0.9;
+                  transform: scale(1.1);
+                }
+              }
+
+              .button-card-name {
+                color: var(--sidebar-text-color, #b2ebf2) !important;
+                font-size: 12px !important;
+                font-weight: 600 !important;
+                text-shadow: 0 1px 8px rgba(0, 188, 212, 0.6) !important;
+                z-index: 10;
+                position: relative;
+              }
+
+              ha-icon {
+                color: var(--sidebar-text-color, #b2ebf2) !important;
+                --mdc-icon-size: 24px !important;
+                z-index: 10;
+                position: relative;
+                filter: drop-shadow(0 0 8px rgba(0, 188, 212, 0.8));
+              }
+views:
+  - title: Portfolio (Auto)
+    path: portfolio-auto
+    icon: mdi:wallet
+    type: sections
+    max_columns: 4
+    sections:
+      - type: custom:stack-in-card
+        cards:
+          - type: custom:layout-card
+            layout_type: custom:grid-layout
+            layout:
+              grid-template-columns: 70% 30%
+              grid-template-rows: auto
+              grid-template-areas: |
+                "greeting weather"
+            cards:
+              - type: markdown
+                content: >
+                  {% set hour = now().hour %} {% set greeting = 
+                    'Good Morning' if 4 <= hour < 12 else
+                    'Good Afternoon' if 12 <= hour < 17 else
+                    'Good Evening'
+                  %} # {{ greeting }} Crazy Family <br> <div style="font-size:
+                  2.0em; color: var(--secondary-text-color);">
+                    {{ state_attr('sensor.daily_quote_feed', 'entries')[0].summary }} - {{ state_attr('sensor.daily_quote_feed', 'entries')[0].title }}
+                  </div>
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: none;
+                      border: none;
+                      padding: 8px !important;
+                    }
+                grid_area: greeting
+              - type: weather-forecast
+                entity: weather.forecast_home
+                show_current: false
+                show_forecast: true
+                forecast_type: daily
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: none;
+                      border: none;
+                      padding: 8px !important;
+                      margin: 0px !important;
+                      text-align: right;
+                    }
+                grid_area: weather
+        card_mod:
+          style: |
+            ha-card {
+              background-color: var(--card-background-color);
+              border-radius: 12px;
+              padding: 0px !important;
+            }
+        column_span: 4
+      - type: grid
+        cards:
+          - type: markdown
+            content: >
+              # 💼 Investment Portfolio
+
+              **Real-time tracking with Biofects Portfolio Tracker**
+
+
+              {% set portfolio_entities = states.sensor |
+              selectattr('entity_id', 'match', 'sensor\.portfolio_summary.*') |
+              list %} {% set available_portfolios = portfolio_entities |
+              selectattr('state', '!=', 'unavailable') | list %} {% if
+              available_portfolios | length > 0 %} {% set active_portfolio =
+              available_portfolios[0] %} {% set portfolio_sensor =
+              active_portfolio.entity_id %} {% set current_value =
+              states(portfolio_sensor) | float(0) %} {% set total_cost =
+              state_attr(portfolio_sensor,'total_cost') | float(0) %} {% set
+              gain_loss = state_attr(portfolio_sensor,'total_gain_loss') |
+              float(0) %} {% set gain_loss_pct =
+              state_attr(portfolio_sensor,'total_gain_loss_percent') | float(0)
+              %}
+
+              ## Overview: ${{ "{:,.2f}".format(current_value) }}
+
+              📊 **Holdings:** {{ state_attr(portfolio_sensor,'total_holdings')
+              | int(0) }} ({{ state_attr(portfolio_sensor,'stock_count') |
+              int(0) }} stocks, {{ state_attr(portfolio_sensor,'crypto_count') |
+              int(0) }} crypto)
+
+              💰 **Total Invested:** ${{ "{:,.2f}".format(total_cost) }}
+
+              📊 **Current Value:** ${{ "{:,.2f}".format(current_value) }}
+
+              {% if gain_loss >= 0 %} <font color="green">📈 **Gain:** +${{
+              "{:,.2f}".format(gain_loss) }} (+{{ "{:.2f}".format(gain_loss_pct)
+              }}%)</font> {% else %} <font color="red">📉 **Loss:** ${{
+              "{:,.2f}".format(gain_loss) }} ({{ "{:.2f}".format(gain_loss_pct)
+              }}%)</font> {% endif %} {% else %} **⚠️ No active portfolio
+              found.**
+
+              Please configure the Biofects Portfolio integration in Settings →
+              Integrations. {% endif %}
+            card_mod:
+              style: |
+                ha-card {
+                  background: rgba(0,30,60,0.5);
+                  border-radius: 14px;
+                  border: 1px solid rgba(0,255,255,0.15);
+                  box-shadow: 0 0 15px rgba(0,255,255,0.15);
+                  padding: 16px;
+                }
+          - type: custom:auto-entities
+            title: 📈 Stock Holdings
+            show_empty: false
+            card:
+              type: entities
+              show_header_toggle: false
+            filter:
+              include:
+                - entity_id: sensor.holding_*
+                  attributes:
+                    holding_type: stock
+            card_mod:
+              style: |
+                ha-card {
+                  background: rgba(0,30,60,0.5);
+                  border-radius: 14px;
+                  border: 1px solid rgba(0,255,255,0.15);
+                  box-shadow: 0 0 15px rgba(0,255,255,0.15);
+                }
+          - type: custom:auto-entities
+            title: ₿ Crypto Holdings
+            show_empty: false
+            card:
+              type: entities
+              show_header_toggle: false
+            filter:
+              include:
+                - entity_id: sensor.holding_*
+                  attributes:
+                    holding_type: crypto
+            card_mod:
+              style: |
+                ha-card {
+                  background: rgba(0,30,60,0.5);
+                  border-radius: 14px;
+                  border: 1px solid rgba(0,255,255,0.15);
+                  box-shadow: 0 0 15px rgba(0,255,255,0.15);
+                }
+          - type: custom:auto-entities
+            card:
+              type: history-graph
+              title: 📈 Stock Values (Last 7 Days)
+              hours_to_show: 168
+              refresh_interval: 300
+            filter:
+              include:
+                - entity_id: sensor.holding_*
+                  attributes:
+                    holding_type: stock
+            card_mod:
+              style: |
+                ha-card {
+                  background: rgba(0,30,60,0.5);
+                  border-radius: 14px;
+                  border: 1px solid rgba(0,255,255,0.15);
+                  box-shadow: 0 0 15px rgba(0,255,255,0.15);
+                }
+          - type: custom:auto-entities
+            card:
+              type: history-graph
+              title: ₿ Crypto Values (Last 7 Days)
+              hours_to_show: 168
+              refresh_interval: 300
+            filter:
+              include:
+                - entity_id: sensor.holding_*
+                  attributes:
+                    holding_type: crypto
+            card_mod:
+              style: |
+                ha-card {
+                  background: rgba(0,30,60,0.5);
+                  border-radius: 14px;
+                  border: 1px solid rgba(0,255,255,0.15);
+                  box-shadow: 0 0 15px rgba(0,255,255,0.15);
+                }
+          - type: history-graph
+            title: 📈 Portfolio Value (Last 7 Days)
+            entities:
+              - sensor.portfolio_summary
+            hours_to_show: 168
+            refresh_interval: 300
+            card_mod:
+              style: |
+                ha-card {
+                  background: rgba(0,30,60,0.5);
+                  border-radius: 14px;
+                  border: 1px solid rgba(0,255,255,0.15);
+                  box-shadow: 0 0 15px rgba(0,255,255,0.15);
+                }
+        column_span: 4
+      - type: grid
+        cards:
+          - type: markdown
+            title: 📰 Market News
+            content: >
+              {% set news_entities = states.sensor | selectattr('entity_id',
+              'match', 'sensor\.portfolio_news.*') | list %}
+
+              {% set available_news = news_entities | selectattr('state', '!=',
+              'unavailable') | list %}
+
+              {% if available_news | length > 0 %}
+
+              {% set active_news = available_news[0] %}
+
+              {% set news = state_attr(active_news.entity_id, 'news_items') %}
+
+              {% if news and news | length > 0 %}
+
+              {% for item in news[:5] %}
+
+              **[{{ item.title }}]({{ item.link }})**
+
+              *{{ item.published }}*
+               {{ item.summary[:150] }}
+              {% endfor %}
+
+              {% else %}
+
+              _No news available right now._
+
+              {% endif %}
+
+              {% else %}
+
+              _No news feed found. Please configure the Biofects Portfolio
+              integration._
+
+              {% endif %}
+            grid_options:
+              columns: 30
+              rows: 7
+            card_mod:
+              style: |
+                ha-card {
+                  background: rgba(0,30,60,0.5);
+                  border-radius: 14px;
+                  border: 1px solid rgba(0,255,255,0.15);
+                  box-shadow: 0 0 15px rgba(0,255,255,0.15);
+                  height: 380px;
+                  overflow-y: auto;
+                  scrollbar-width: none;
+                }
+        column_span: 4
+      - type: grid
+        cards: []
+        column_span: 4

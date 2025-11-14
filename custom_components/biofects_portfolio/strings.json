@@ -52,12 +52,12 @@
       },
       "add_holding": {
         "title": "Add New Holding",
-        "description": "Add a new stock or cryptocurrency to your portfolio",
+        "description": "Add a new stock or cryptocurrency to your portfolio. Enter quantity and total invested - buy price calculated automatically.",
         "data": {
           "symbol": "Symbol (e.g., AAPL, BTC)",
-          "holding_type": "Type",
-          "quantity": "Quantity",
-          "buy_price": "Buy Price ($)"
+          "holding_type": "Type (Stock or Crypto)",
+          "quantity": "Quantity (shares/coins owned)",
+          "total_invested": "Total Invested (USD paid total)"
         }
       },
       "remove_holding": {

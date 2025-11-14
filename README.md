@@ -22,10 +22,10 @@ If you find this plugin useful, please consider donating. Your support is greatl
 ## 🌟 Features
 
 ### 📊 Unified Portfolio Tracking
-- **Multi-Asset Support**: Track both stocks (via Finnhub) and cryptocurrencies (via CoinGecko) in one unified portfolio
+- **Multi-Asset Support**: Track both stocks and cryptocurrencies via Finnhub API in one unified portfolio
 - **Real-Time Updates**: Automatic price updates on a configurable schedule (default: every 10 minutes)
 - **Efficient API Usage**: Batch API calls minimize rate limits and maximize performance
-- **No Crypto API Key Needed**: CoinGecko is completely free - just add crypto holdings and go!
+- **Dynamic Entity Management**: Entities are automatically created and removed based on your holdings configuration
 
 ### 💰 Comprehensive Analytics
 **For each holding:**
@@ -47,10 +47,10 @@ If you find this plugin useful, please consider donating. Your support is greatl
 - Cached hourly to minimize API load
 - Accessible as sensor attributes for custom dashboards
 
+
 ### 🎯 Smart Features
 - **Intelligent caching** reduces API calls (5-min for prices, 60-min for news)
 - **Symbol normalization** - automatically converts to uppercase (NVDA, BTC, etc.)
-- **Separate price sensors** optimized for Home Assistant graphing
 - **Post-install configuration** - add/remove holdings and update API keys anytime
 
 ### 🎨 Easy Configuration
@@ -75,7 +75,6 @@ If you find this plugin useful, please consider donating. Your support is greatl
 
 ### Manual Installation
 
-1. Download the latest release
 2. Copy the `custom_components/biofects_portfolio` folder to your Home Assistant's `custom_components` directory
 3. Restart Home Assistant
 
@@ -86,48 +85,21 @@ If you find this plugin useful, please consider donating. Your support is greatl
 **Required:**
 
 **Finnhub** (for stocks): 
-- Sign up at https://finnhub.io/register
 - Free tier: 60 API calls/minute
 - Get your API key from the dashboard
    
 **Optional:**
-
-**CoinGecko** (for crypto):
-- ✅ **Works completely FREE without an API key!**
-- The integration uses CoinGecko's free public API
-- No registration needed
-- Just add crypto holdings with `type: crypto` and they work automatically!
+- No separate API key needed for crypto
 
 ### Setup via UI
-
-1. Go to **Settings** → **Devices & Services**
-2. Click **+ Add Integration**
-3. Search for "**Biofects Portfolio Tracker**"
-4. Enter your Finnhub API key (crypto works without any key!)
 5. Add your holdings:
    - **Symbol**: Stock ticker (e.g., `AAPL`) or crypto symbol (e.g., `BTC`)
-   - **Type**: Choose `stock` or `crypto`
-   - **Quantity**: Number of shares/coins
-   - **Buy Price**: Your purchase price per unit
-6. Click "Add another" to add more holdings, or uncheck to finish
-
 ### Post-Installation Configuration
 
-After setup, you can modify your portfolio anytime:
-
-1. Go to **Settings** → **Devices & Services**
 2. Find **Biofects Portfolio Tracker**
 3. Click **Configure** (⚙️ gear icon)
-4. Choose from:
-   - Update refresh interval
-   - Update Finnhub API key
-   - Add new holdings
    - Remove holdings
    - View all holdings
-
-## 📊 Available Sensors
-
-After setup, the following sensors will be created:
 
 ### Portfolio Summary Sensor
 `sensor.portfolio_summary`
@@ -142,7 +114,9 @@ After setup, the following sensors will be created:
   - `last_updated`: Last update timestamp
 
 ### Individual Holding Sensors
-`sensor.holding_[symbol]`
+For each holding, two sensors are created:
+
+**`sensor.holding_[symbol]`** - Holding details
 - **State**: Total position value in USD
 - **Attributes**:
   - `symbol`: Asset symbol
@@ -150,13 +124,60 @@ After setup, the following sensors will be created:
   - `quantity`: Number of shares/coins
   - `buy_price`: Purchase price
   - `current_price`: Current market price
+  - `total_value`: Position value
+  - `gain_loss`: Gain/loss amount
+  - `gain_loss_percent`: Gain/loss percentage
+
+
+
+## 🧩 Requirements for Dashboard (Auto Layout)
+
+If you want to use the advanced auto-discovery dashboard (`sample-layout-auto.yml`), you must install these HACS frontend cards:
+
+- [auto-entities](https://github.com/thomasloven/lovelace-auto-entities) – Dynamic entity lists
+- [stack-in-card](https://github.com/custom-cards/stack-in-card) – Card organization
+- [layout-card](https://github.com/thomasloven/lovelace-layout-card) – Advanced layouts
+
+Install these from HACS → Frontend before using the auto layout sample.
+
+---
+## 🎨 Dashboard Setup
+
+### Dashboard Versions Available
+#### 1. Basic Layout ([examples/sample-layout.yml](examples/sample-layout.yml))
+- **Works immediately** with no additional cards required
+- Uses standard Home Assistant cards only
+- **Manual**: You need to add entity names when you add new holdings
+- Perfect for getting started quickly
+
+#### 2. Auto Layout ([examples/sample-layout-auto.yml](examples/sample-layout-auto.yml))
+- **Requires HACS cards** but provides automatic discovery
+- **Dynamic**: Automatically shows new holdings as you add them
+- No manual entity configuration needed
+
+### Required HACS Frontend Cards (for Auto Layout)
+
+For the auto sample dashboard layout to work, install these cards via HACS:
+
+1. **auto-entities** - For dynamic entity lists
+   - HACS → Frontend → Search "auto-entities"
+2. **stack-in-card** - For card organization
+   - HACS → Frontend → Search "stack-in-card"  
+3. **layout-card** - For advanced layouts
+   - HACS → Frontend → Search "layout-card"
+
+### Quick Start
+
+1. **Basic Setup**: [View or copy the sample-layout.yml](examples/sample-layout.yml) – works immediately!
+2. **Enhanced Setup**: Install HACS cards, then [view or copy sample-layout-auto.yml](examples/sample-layout-auto.yml) for automatic entity discovery
+
+### News Feed Sensor
+  - `current_price`: Current market price
   - `total_cost`: Position cost basis
   - `gain_loss`: Position gain/loss in USD
   - `gain_loss_percent`: Position performance %
   - `last_updated`: Last update timestamp
 
-### Portfolio News Sensor
-`sensor.portfolio_news`
 - **State**: Number of news items
 - **Attributes**:
   - `news_items`: Array of news objects with:
@@ -169,8 +190,6 @@ After setup, the following sensors will be created:
 
 ### Simple Portfolio Card
 
-```yaml
-type: entities
 title: 💼 My Portfolio
 entities:
   - entity: sensor.portfolio_summary
@@ -181,8 +200,6 @@ entities:
     attribute: total_gain_loss
     name: Gain/Loss
     suffix: USD
-  - type: attribute
-    entity: sensor.portfolio_summary
     attribute: total_gain_loss_percent
     name: Performance
     suffix: '%'
@@ -190,10 +207,6 @@ entities:
 
 ### Holdings List Card
 
-```yaml
-type: entities
-title: 📈 Holdings
-entities:
   - entity: sensor.holding_aapl
     name: Apple (AAPL)
     secondary_info: attribute
@@ -206,10 +219,6 @@ entities:
     name: Bitcoin
     secondary_info: attribute
     attribute: gain_loss_percent
-  - entity: sensor.holding_eth
-    name: Ethereum
-    secondary_info: attribute
-    attribute: gain_loss_percent
 ```
 
 ### Portfolio Chart (Using ApexCharts)
@@ -220,10 +229,7 @@ header:
   show: true
   title: Portfolio Performance
 graph_span: 7d
-series:
-  - entity: sensor.portfolio_summary
     name: Portfolio Value
-    stroke_width: 2
 ```
 
 ### Advanced Portfolio Dashboard with Statistics

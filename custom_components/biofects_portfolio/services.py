@@ -20,8 +20,9 @@ SERVICE_UPDATE_HOLDING = "update_holding"
 ADD_HOLDING_SCHEMA = vol.Schema({
     vol.Required(CONF_SYMBOL): cv.string,
     vol.Required(CONF_HOLDING_TYPE): vol.In(["stock", "crypto"]),
-    vol.Required(CONF_QUANTITY): vol.Coerce(float),
-    vol.Required(CONF_BUY_PRICE): vol.Coerce(float),
+    vol.Optional(CONF_QUANTITY): vol.Coerce(float),
+    vol.Optional(CONF_BUY_PRICE): vol.Coerce(float),
+    vol.Optional("total_invested"): vol.Coerce(float),
 })
 
 REMOVE_HOLDING_SCHEMA = vol.Schema({
@@ -39,29 +40,37 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     """Set up services for Biofects Portfolio."""
 
     async def async_handle_add_holding(call: ServiceCall) -> None:
-        """Handle add holding service call."""
-        symbol = call.data[CONF_SYMBOL]
+        symbol = call.data[CONF_SYMBOL].upper()
         holding_type = call.data[CONF_HOLDING_TYPE]
-        quantity = call.data[CONF_QUANTITY]
-        buy_price = call.data[CONF_BUY_PRICE]
-
+        quantity = call.data.get(CONF_QUANTITY)
+        buy_price = call.data.get(CONF_BUY_PRICE)
+        total_invested = call.data.get("total_invested")
+        # Calculate missing field if possible
+        if holding_type == "crypto":
+            if quantity is not None and buy_price is not None:
+                total_invested = quantity * buy_price
+            elif total_invested is not None and buy_price is not None:
+                quantity = total_invested / buy_price if buy_price else 0
+            elif total_invested is not None and quantity is not None:
+                buy_price = total_invested / quantity if quantity else 0
+        else:
+            if quantity is not None and buy_price is not None:
+                total_invested = buy_price * quantity
         # Get all config entries
         for entry_id, data in hass.data.get(DOMAIN, {}).items():
             if isinstance(data, dict) and "api_client" in data:
                 api_client = data["api_client"]
-                
                 # Add holding
                 api_client.holdings.append({
                     CONF_SYMBOL: symbol,
                     CONF_HOLDING_TYPE: holding_type,
                     CONF_QUANTITY: quantity,
                     CONF_BUY_PRICE: buy_price,
+                    "total_invested": total_invested,
                 })
-                
                 # Force update
                 coordinator = data["coordinator"]
                 await coordinator.async_request_refresh()
-                
                 _LOGGER.info(f"Added holding: {symbol}")
                 break
 

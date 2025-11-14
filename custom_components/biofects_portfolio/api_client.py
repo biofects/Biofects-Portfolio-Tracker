@@ -82,39 +82,67 @@ class PortfolioAPIClient:
         for holding in self.holdings:
             holding_type = holding.get("holding_type")
             symbol = holding.get("symbol", "").upper()  # Normalize to uppercase
-            quantity = float(holding.get("quantity", 0))
-            buy_price = float(holding.get("buy_price", 0))
-
-            current_price = 0.0
-            if holding_type == HOLDING_TYPE_STOCK and symbol in stock_data:
-                current_price = stock_data[symbol]
-            elif holding_type == HOLDING_TYPE_CRYPTO and symbol in crypto_data:
-                current_price = crypto_data[symbol]
-            
-            # Log if price is still 0
-            if current_price == 0:
-                _LOGGER.warning(f"Price for {symbol} ({holding_type}) is 0 - check API response")
-
-            total_holding_value = current_price * quantity
-            total_holding_cost = buy_price * quantity
-            gain_loss = total_holding_value - total_holding_cost
-            gain_loss_pct = (gain_loss / total_holding_cost * 100) if total_holding_cost > 0 else 0
-
-            result["holdings"].append({
-                "symbol": symbol,
-                "holding_type": holding_type,
-                "quantity": quantity,
-                "buy_price": buy_price,
-                "current_price": current_price,
-                "total_value": total_holding_value,
-                "total_cost": total_holding_cost,
-                "gain_loss": gain_loss,
-                "gain_loss_percent": gain_loss_pct,
-                "last_updated": datetime.now().isoformat(),
-            })
-
-            total_value += total_holding_value
-            total_cost += total_holding_cost
+            if holding_type == HOLDING_TYPE_CRYPTO:
+                # Flexible field support: quantity, buy_price, total_invested
+                quantity = float(holding.get("quantity", 0))
+                buy_price = float(holding.get("buy_price", 0))
+                total_invested = float(holding.get("total_invested", 0))
+                # Calculate missing value if only two are present
+                fields_filled = sum([quantity > 0, buy_price > 0, total_invested > 0])
+                if fields_filled >= 2:
+                    if quantity > 0 and buy_price > 0 and total_invested == 0:
+                        total_invested = quantity * buy_price
+                    elif total_invested > 0 and buy_price > 0 and quantity == 0:
+                        quantity = total_invested / buy_price if buy_price else 0
+                    elif total_invested > 0 and quantity > 0 and buy_price == 0:
+                        buy_price = total_invested / quantity if quantity else 0
+                # If only one or zero fields, all will be zero
+                current_price = crypto_data.get(symbol, 0.0)
+                if current_price == 0:
+                    _LOGGER.warning(f"Price for {symbol} (crypto) is 0 - check API response")
+                current_value = quantity * current_price
+                profit_loss = current_value - total_invested
+                percent_change = (profit_loss / total_invested * 100) if total_invested > 0 else 0
+                result["holdings"].append({
+                    "symbol": symbol,
+                    "holding_type": holding_type,
+                    "quantity": quantity,
+                    "buy_price": buy_price,
+                    "current_price": current_price,
+                    "total_value": current_value,
+                    "total_cost": total_invested,
+                    "total_invested": total_invested,
+                    "gain_loss": profit_loss,
+                    "gain_loss_percent": percent_change,
+                    "last_updated": datetime.now().isoformat(),
+                })
+                total_value += current_value
+                total_cost += total_invested
+            else:
+                quantity = float(holding.get("quantity", 0))
+                buy_price = float(holding.get("buy_price", 0))
+                current_price = stock_data.get(symbol, 0.0)
+                if current_price == 0:
+                    _LOGGER.warning(f"Price for {symbol} (stock) is 0 - check API response")
+                total_holding_value = current_price * quantity
+                total_holding_cost = holding.get("total_invested", buy_price * quantity)
+                gain_loss = total_holding_value - total_holding_cost
+                gain_loss_pct = (gain_loss / total_holding_cost * 100) if total_holding_cost > 0 else 0
+                result["holdings"].append({
+                    "symbol": symbol,
+                    "holding_type": holding_type,
+                    "quantity": quantity,
+                    "buy_price": buy_price,
+                    "current_price": current_price,
+                    "total_value": total_holding_value,
+                    "total_cost": total_holding_cost,
+                    "total_invested": holding.get("total_invested"),
+                    "gain_loss": gain_loss,
+                    "gain_loss_percent": gain_loss_pct,
+                    "last_updated": datetime.now().isoformat(),
+                })
+                total_value += total_holding_value
+                total_cost += total_holding_cost
 
         # Calculate portfolio totals
         portfolio_gain_loss = total_value - total_cost

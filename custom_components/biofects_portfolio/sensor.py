@@ -57,8 +57,6 @@ async def async_setup_entry(
     if coordinator.data and "holdings" in coordinator.data:
         for idx, holding in enumerate(coordinator.data["holdings"]):
             entities.append(HoldingSensor(coordinator, entry, idx))
-            # Add price sensor for graphing
-            entities.append(HoldingPriceSensor(coordinator, entry, idx))
 
     # Add news sensor
     entities.append(PortfolioNewsSensor(coordinator, entry))
@@ -118,8 +116,12 @@ class HoldingSensor(CoordinatorEntity, SensorEntity):
         holding = self._get_holding()
         symbol = holding.get(ATTR_SYMBOL, f"holding_{index}")
         
-        self._attr_unique_id = f"{entry.entry_id}_holding_{symbol}_{index}"
-        self._attr_name = f"Holding {symbol}"
+
+        # Standardize unique_id and name for all holdings
+        lot_id = holding.get('lot_id', index)
+        self._attr_unique_id = f"{entry.entry_id}_holding_{symbol}_{lot_id}"
+        self._attr_name = f"Holding {symbol} {lot_id}"
+            
         self._attr_native_unit_of_measurement = CURRENCY_DOLLAR
         self._attr_state_class = SensorStateClass.TOTAL
         self._attr_device_class = SensorDeviceClass.MONETARY
@@ -146,89 +148,37 @@ class HoldingSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def native_value(self) -> float | None:
-        """Return the state of the sensor."""
+        """Return the state of the sensor, rounded to 2 decimals."""
         holding = self._get_holding()
-        return holding.get(ATTR_TOTAL_VALUE)
+        value = holding.get(ATTR_TOTAL_VALUE)
+        if value is not None:
+            return round(value, 2)
+        return value
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
         holding = self._get_holding()
-        
         if not holding:
             return {}
-
-        return {
+        # Enhanced attributes with better formatting for display
+        attrs = {
             ATTR_SYMBOL: holding.get(ATTR_SYMBOL),
             ATTR_HOLDING_TYPE: holding.get(ATTR_HOLDING_TYPE),
             ATTR_QUANTITY: holding.get(ATTR_QUANTITY),
             ATTR_BUY_PRICE: holding.get(ATTR_BUY_PRICE),
-            ATTR_CURRENT_PRICE: holding.get(ATTR_CURRENT_PRICE),
-            ATTR_TOTAL_COST: holding.get(ATTR_TOTAL_COST),
-            ATTR_GAIN_LOSS: holding.get(ATTR_GAIN_LOSS),
-            ATTR_GAIN_LOSS_PCT: holding.get(ATTR_GAIN_LOSS_PCT),
+            ATTR_CURRENT_PRICE: round(holding.get(ATTR_CURRENT_PRICE), 2) if holding.get(ATTR_CURRENT_PRICE) is not None else None,
+            "current_value": round(holding.get(ATTR_TOTAL_VALUE), 2) if holding.get(ATTR_TOTAL_VALUE) is not None else None,
+            ATTR_GAIN_LOSS: round(holding.get(ATTR_GAIN_LOSS), 2) if holding.get(ATTR_GAIN_LOSS) is not None else None,
+            ATTR_GAIN_LOSS_PCT: round(holding.get(ATTR_GAIN_LOSS_PCT), 2) if holding.get(ATTR_GAIN_LOSS_PCT) is not None else None,
             ATTR_LAST_UPDATED: holding.get(ATTR_LAST_UPDATED),
+            "total_invested": round(holding.get("total_invested"), 2) if holding.get("total_invested") is not None else (
+                round(holding.get("amount_invested"), 2) if holding.get("amount_invested") is not None else None
+            ),
         }
+        return attrs
 
 
-class HoldingPriceSensor(CoordinatorEntity, SensorEntity):
-    """Representation of a holding's current price (for graphing)."""
-
-    def __init__(self, coordinator, entry: ConfigEntry, index: int) -> None:
-        """Initialize the sensor."""
-        super().__init__(coordinator)
-        self._entry = entry
-        self._index = index
-        
-        # Get initial holding data for setup
-        holding = self._get_holding()
-        symbol = holding.get(ATTR_SYMBOL, f"holding_{index}")
-        
-        self._attr_unique_id = f"{entry.entry_id}_price_{symbol}_{index}"
-        self._attr_name = f"{symbol} Price"
-        self._attr_native_unit_of_measurement = CURRENCY_DOLLAR
-        self._attr_state_class = SensorStateClass.MEASUREMENT
-        self._attr_device_class = SensorDeviceClass.MONETARY
-
-    def _get_holding(self) -> dict[str, Any]:
-        """Get holding data from coordinator."""
-        if (
-            self.coordinator.data
-            and "holdings" in self.coordinator.data
-            and len(self.coordinator.data["holdings"]) > self._index
-        ):
-            return self.coordinator.data["holdings"][self._index]
-        return {}
-
-    @property
-    def icon(self) -> str:
-        """Return the icon to use in the frontend."""
-        holding = self._get_holding()
-        holding_type = holding.get(ATTR_HOLDING_TYPE, "")
-        
-        if holding_type == "crypto":
-            return "mdi:currency-btc"
-        return "mdi:chart-line"
-
-    @property
-    def native_value(self) -> float | None:
-        """Return the current price."""
-        holding = self._get_holding()
-        return holding.get(ATTR_CURRENT_PRICE, 0.0)
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return the state attributes."""
-        holding = self._get_holding()
-        
-        if not holding:
-            return {}
-
-        return {
-            ATTR_SYMBOL: holding.get(ATTR_SYMBOL),
-            ATTR_HOLDING_TYPE: holding.get(ATTR_HOLDING_TYPE),
-            ATTR_LAST_UPDATED: holding.get(ATTR_LAST_UPDATED),
-        }
 
 
 class PortfolioNewsSensor(CoordinatorEntity, SensorEntity):

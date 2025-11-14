@@ -21,6 +21,8 @@ CONF_SYMBOL = "symbol"
 CONF_QUANTITY = "quantity"
 CONF_BUY_PRICE = "buy_price"
 CONF_HOLDING_TYPE = "holding_type"
+CONF_PURCHASE_DATE = "purchase_date"  # New: track when purchased
+CONF_LOT_ID = "lot_id"  # New: unique ID for each purchase
 
 # Cache keys
 CACHE_STOCK_DATA = "stock_data"

@@ -77,53 +77,90 @@ class BiofectsPortfolioConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_holdings(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Handle adding holdings."""
+        """Step 1: Select symbol and holding type."""
         if user_input is not None:
-            if user_input.get("add_another"):
-                # Add the holding
-                self._holdings.append({
-                    CONF_SYMBOL: user_input[CONF_SYMBOL],
-                    CONF_HOLDING_TYPE: user_input[CONF_HOLDING_TYPE],
-                    CONF_QUANTITY: user_input[CONF_QUANTITY],
-                    CONF_BUY_PRICE: user_input[CONF_BUY_PRICE],
-                })
-                # Show form again to add another
-                return await self.async_step_holdings()
-            else:
-                # Add final holding if provided
-                if user_input.get(CONF_SYMBOL):
-                    self._holdings.append({
-                        CONF_SYMBOL: user_input[CONF_SYMBOL],
-                        CONF_HOLDING_TYPE: user_input[CONF_HOLDING_TYPE],
-                        CONF_QUANTITY: user_input[CONF_QUANTITY],
-                        CONF_BUY_PRICE: user_input[CONF_BUY_PRICE],
-                    })
-                
-                # Finish configuration
-                self._data[CONF_HOLDINGS] = self._holdings
-                self._data[CONF_UPDATE_INTERVAL] = DEFAULT_UPDATE_INTERVAL
-                
-                return self.async_create_entry(
-                    title="Biofects Portfolio",
-                    data=self._data,
-                )
+            self._pending_symbol = user_input[CONF_SYMBOL]
+            self._pending_type = user_input[CONF_HOLDING_TYPE]
+            return await self.async_step_holdings_details()
 
         holdings_schema = vol.Schema({
             vol.Required(CONF_SYMBOL): cv.string,
-            vol.Required(CONF_HOLDING_TYPE, default=HOLDING_TYPE_STOCK): vol.In(
-                [HOLDING_TYPE_STOCK, HOLDING_TYPE_CRYPTO]
-            ),
-            vol.Required(CONF_QUANTITY): vol.Coerce(float),
-            vol.Required(CONF_BUY_PRICE): vol.Coerce(float),
-            vol.Optional("add_another", default=True): cv.boolean,
+            vol.Required(CONF_HOLDING_TYPE, default=HOLDING_TYPE_STOCK): vol.In([
+                HOLDING_TYPE_STOCK, HOLDING_TYPE_CRYPTO
+            ]),
         })
-
         return self.async_show_form(
             step_id="holdings",
             data_schema=holdings_schema,
             description_placeholders={
                 "holdings_count": str(len(self._holdings)),
             },
+        )
+
+    async def async_step_holdings_details(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Step 2: Enter details for the selected holding type."""
+        holding_type = self._pending_type
+        symbol = self._pending_symbol
+        if user_input is not None:
+            if holding_type == HOLDING_TYPE_CRYPTO:
+                quantity = user_input.get(CONF_QUANTITY)
+                buy_price = user_input.get(CONF_BUY_PRICE)
+                total_invested = user_input.get("total_invested")
+                # Calculate missing field if possible
+                if quantity is not None and buy_price is not None:
+                    total_invested = quantity * buy_price
+                elif total_invested is not None and buy_price is not None:
+                    quantity = total_invested / buy_price if buy_price else 0
+                elif total_invested is not None and quantity is not None:
+                    buy_price = total_invested / quantity if quantity else 0
+                holding = {
+                    CONF_SYMBOL: symbol,
+                    CONF_HOLDING_TYPE: holding_type,
+                    CONF_QUANTITY: quantity,
+                    CONF_BUY_PRICE: buy_price,
+                    "total_invested": total_invested,
+                }
+            else:
+                quantity = user_input[CONF_QUANTITY]
+                buy_price = user_input[CONF_BUY_PRICE]
+                total_invested = buy_price * quantity
+                holding = {
+                    CONF_SYMBOL: symbol,
+                    CONF_HOLDING_TYPE: holding_type,
+                    CONF_QUANTITY: quantity,
+                    CONF_BUY_PRICE: buy_price,
+                    "total_invested": total_invested,
+                }
+            if user_input.get("add_another"):
+                self._holdings.append(holding)
+                return await self.async_step_holdings()
+            else:
+                self._holdings.append(holding)
+                self._data[CONF_HOLDINGS] = self._holdings
+                self._data[CONF_UPDATE_INTERVAL] = DEFAULT_UPDATE_INTERVAL
+                return self.async_create_entry(
+                    title="Biofects Portfolio",
+                    data=self._data,
+                )
+
+        if holding_type == HOLDING_TYPE_CRYPTO:
+            details_schema = vol.Schema({
+                vol.Optional(CONF_QUANTITY): vol.Coerce(float),
+                vol.Optional(CONF_BUY_PRICE): vol.Coerce(float),
+                vol.Optional("total_invested"): vol.Coerce(float),
+                vol.Optional("add_another", default=True): cv.boolean,
+            })
+        else:
+            details_schema = vol.Schema({
+                vol.Required(CONF_QUANTITY): vol.Coerce(float),
+                vol.Required(CONF_BUY_PRICE): vol.Coerce(float),
+                vol.Optional("add_another", default=True): cv.boolean,
+            })
+        return self.async_show_form(
+            step_id="holdings_details",
+            data_schema=details_schema,
         )
 
     @staticmethod
@@ -236,38 +273,82 @@ class BiofectsPortfolioOptionsFlow(config_entries.OptionsFlow):
     async def async_step_add_holding(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Add a new holding."""
+        """Step 1: Select symbol and holding type for options flow."""
         if user_input is not None:
-            # Get current holdings
+            self._pending_symbol = user_input[CONF_SYMBOL]
+            self._pending_type = user_input[CONF_HOLDING_TYPE]
+            return await self.async_step_add_holding_details()
+
+        add_schema = vol.Schema({
+            vol.Required(CONF_SYMBOL): cv.string,
+            vol.Required(CONF_HOLDING_TYPE, default=HOLDING_TYPE_STOCK): vol.In([
+                HOLDING_TYPE_STOCK, HOLDING_TYPE_CRYPTO
+            ]),
+        })
+        return self.async_show_form(
+            step_id="add_holding",
+            data_schema=add_schema,
+        )
+
+    async def async_step_add_holding_details(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Step 2: Enter details for the selected holding type in options flow."""
+        holding_type = self._pending_type
+        symbol = self._pending_symbol
+        if user_input is not None:
             current_holdings = list(self.config_entry.data.get(CONF_HOLDINGS, []))
-            
-            # Add new holding (normalize symbol to uppercase)
-            current_holdings.append({
-                CONF_SYMBOL: user_input[CONF_SYMBOL].upper(),
-                CONF_HOLDING_TYPE: user_input[CONF_HOLDING_TYPE],
-                CONF_QUANTITY: user_input[CONF_QUANTITY],
-                CONF_BUY_PRICE: user_input[CONF_BUY_PRICE],
-            })
-            
-            # Update config entry
+            if holding_type == HOLDING_TYPE_CRYPTO:
+                quantity = user_input.get(CONF_QUANTITY)
+                buy_price = user_input.get(CONF_BUY_PRICE)
+                total_invested = user_input.get("total_invested")
+                # Calculate missing field if possible
+                if quantity is not None and buy_price is not None:
+                    total_invested = quantity * buy_price
+                elif total_invested is not None and buy_price is not None:
+                    quantity = total_invested / buy_price if buy_price else 0
+                elif total_invested is not None and quantity is not None:
+                    buy_price = total_invested / quantity if quantity else 0
+                holding = {
+                    CONF_SYMBOL: symbol.upper(),
+                    CONF_HOLDING_TYPE: holding_type,
+                    CONF_QUANTITY: quantity,
+                    CONF_BUY_PRICE: buy_price,
+                    "total_invested": total_invested,
+                }
+            else:
+                quantity = user_input[CONF_QUANTITY]
+                buy_price = user_input[CONF_BUY_PRICE]
+                total_invested = buy_price * quantity
+                holding = {
+                    CONF_SYMBOL: symbol.upper(),
+                    CONF_HOLDING_TYPE: holding_type,
+                    CONF_QUANTITY: quantity,
+                    CONF_BUY_PRICE: buy_price,
+                    "total_invested": total_invested,
+                }
+            current_holdings.append(holding)
             new_data = {**self.config_entry.data}
             new_data[CONF_HOLDINGS] = current_holdings
-            
             self.hass.config_entries.async_update_entry(
                 self.config_entry, data=new_data
             )
             return self.async_create_entry(title="", data={})
 
-        return self.async_show_form(
-            step_id="add_holding",
-            data_schema=vol.Schema({
-                vol.Required(CONF_SYMBOL): cv.string,
-                vol.Required(CONF_HOLDING_TYPE, default=HOLDING_TYPE_STOCK): vol.In(
-                    [HOLDING_TYPE_STOCK, HOLDING_TYPE_CRYPTO]
-                ),
+        if holding_type == HOLDING_TYPE_CRYPTO:
+            details_schema = vol.Schema({
+                vol.Optional(CONF_QUANTITY): vol.Coerce(float),
+                vol.Optional(CONF_BUY_PRICE): vol.Coerce(float),
+                vol.Optional("total_invested"): vol.Coerce(float),
+            })
+        else:
+            details_schema = vol.Schema({
                 vol.Required(CONF_QUANTITY): vol.Coerce(float),
                 vol.Required(CONF_BUY_PRICE): vol.Coerce(float),
-            }),
+            })
+        return self.async_show_form(
+            step_id="add_holding_details",
+            data_schema=details_schema,
         )
 
     async def async_step_remove_holding(
